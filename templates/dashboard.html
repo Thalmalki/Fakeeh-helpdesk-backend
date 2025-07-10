@@ -1,0 +1,75 @@
+
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Helpdesk System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        {% if current_user.role == 'admin' %}
+            All Tickets
+        {% else %}
+            My Tickets
+        {% endif %}
+    </h2>
+    <a href="{{ url_for('create_ticket') }}" class="btn btn-primary">Create New Ticket</a>
+</div>
+
+{% if tickets %}
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Created</th>
+                {% if current_user.role == 'admin' %}
+                <th>Creator</th>
+                {% endif %}
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in tickets %}
+            <tr>
+                <td>{{ ticket.id }}</td>
+                <td>{{ ticket.title }}</td>
+                <td>
+                    {% if ticket.priority == 'high' %}
+                        <span class="badge bg-danger">High</span>
+                    {% elif ticket.priority == 'medium' %}
+                        <span class="badge bg-warning">Medium</span>
+                    {% else %}
+                        <span class="badge bg-info">Low</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if ticket.status == 'open' %}
+                        <span class="badge bg-success">Open</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Closed</span>
+                    {% endif %}
+                </td>
+                <td>{{ ticket.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                {% if current_user.role == 'admin' %}
+                <td>{{ ticket.creator.username }}</td>
+                {% endif %}
+                <td>
+                    <a href="{{ url_for('view_ticket', ticket_id=ticket.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                    {% if current_user.role == 'admin' and ticket.status == 'open' %}
+                        <a href="{{ url_for('close_ticket', ticket_id=ticket.id) }}" class="btn btn-sm btn-outline-danger">Close</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    No tickets found. <a href="{{ url_for('create_ticket') }}">Create your first ticket</a>.
+</div>
+{% endif %}
+{% endblock %}
